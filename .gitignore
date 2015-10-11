@@ -1,0 +1,11 @@
+**/*.pdf
+**/*.pyc
+
+**/*.pkl
+**/*.gz
+**/tex
+
+**/*.npz
+**/.DS_Store
+
+**/*.xlsx
