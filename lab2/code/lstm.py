@@ -708,7 +708,7 @@ if __name__ == '__main__':
     train_lstm(
         max_epochs=100,
         test_size=500,
-        exp_name="have all gates"
+        exp_name="have_all_gates"
     )
 
     has_input_gate = False
