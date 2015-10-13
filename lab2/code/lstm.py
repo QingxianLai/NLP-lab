@@ -153,6 +153,10 @@ def param_init_lstm(options, params, prefix='lstm'):
 
     return params
 
+has_input_gate = True
+has_forget_gate = True
+has_output_gate = True
+
 
 def lstm_layer(tparams, state_below, options, prefix='lstm', mask=None):
     nsteps = state_below.shape[0]
@@ -177,10 +181,24 @@ def lstm_layer(tparams, state_below, options, prefix='lstm', mask=None):
         o = tensor.nnet.sigmoid(_slice(preact, 2, options['dim_proj']))
         c = tensor.tanh(_slice(preact, 3, options['dim_proj']))
 
-        c = f * c_ + i * c
+        if has_input_gate:
+            if has_forget_gate:
+                c = f * c_ + i * c
+            else:
+                c = c_ + i*c
+        else:
+            if has_forget_gate:
+                c = f*c_ + c
+            else:
+                c = c_ + c
+
         c = m_[:, None] * c + (1. - m_)[:, None] * c_
 
-        h = o * tensor.tanh(c)
+        if has_output_gate:
+            h = o * tensor.tanh(c)
+        else:
+            h = tensor.tanh(c)
+
         h = m_[:, None] * h + (1. - m_)[:, None] * h_
 
         return h, c
@@ -442,6 +460,9 @@ def pred_error(f_pred, prepare_data, data, iterator, verbose=False):
     return valid_err
 
 
+import matplotlib.pyplot as plt
+import seaborn
+
 def train_lstm(
     dim_proj=128,  # word embeding dimension and LSTM number of hidden units.
     patience=10,  # Number of epoch to wait before early stop if no progress
@@ -453,7 +474,7 @@ def train_lstm(
     optimizer=adadelta,  # sgd, adadelta and rmsprop available, sgd very hard to use, not recommanded (probably need momentum and decaying learning rate).
     encoder='lstm',  # TODO: can be removed must be lstm.
     saveto='lstm_model.npz',  # The best model will be saved there
-    validFreq=370,  # Compute the validation error after this number of update.
+    validFreq=-1,  # Compute the validation error after this number of update.
     saveFreq=1110,  # Save the parameters after every saveFreq updates
     maxlen=100,  # Sequence longer then this get ignored
     batch_size=16,  # The batch size during training.
@@ -466,11 +487,15 @@ def train_lstm(
                        # This frequently need a bigger model.
     reload_model=None,  # Path to a saved model we want to start from.
     test_size=-1,  # If >0, we keep only this number of test example.
+    exp_name = "no_input_gate"
 ):
+
+    f = open(exp_name + ".txt", 'w+')
 
     # Model options
     model_options = locals().copy()
     print "model options", model_options
+    print >> f, model_options
 
     load_data, prepare_data = get_dataset(dataset)
 
@@ -532,6 +557,10 @@ def train_lstm(
     print "%d valid examples" % len(valid[0])
     print "%d test examples" % len(test[0])
 
+    print >> f,  "%d train examples" % len(train[0])
+    print >> f, "%d valid examples" % len(valid[0])
+    print >> f, "%d test examples" % len(test[0])
+
     history_errs = []
     best_p = None
     bad_count = 0
@@ -544,6 +573,10 @@ def train_lstm(
     uidx = 0  # the number of update done
     estop = False  # early stop
     start_time = time.time()
+    train_errs = []
+    valid_errs = []
+
+
     try:
         for eidx in xrange(max_epochs):
             n_samples = 0
@@ -557,7 +590,7 @@ def train_lstm(
 
                 # Select the random examples for this minibatch
                 y = [train[1][t] for t in train_index]
-                x = [train[0][t]for t in train_index]
+                x = [train[0][t] for t in train_index]
 
                 # Get the data in numpy.ndarray format
                 # This swap the axis!
@@ -573,7 +606,7 @@ def train_lstm(
                     return 1., 1., 1.
 
                 if numpy.mod(uidx, dispFreq) == 0:
-                    print 'Epoch ', eidx, 'Update ', uidx, 'Cost ', cost
+                    print >> f,  'Epoch ', eidx, 'Update ', uidx, 'Cost ', cost
 
                 if saveto and numpy.mod(uidx, saveFreq) == 0:
                     print 'Saving...',
@@ -593,6 +626,9 @@ def train_lstm(
                                            kf_valid)
                     test_err = pred_error(f_pred, prepare_data, test, kf_test)
 
+                    train_errs.append(train_err)
+                    valid_errs.append(valid_err)
+
                     history_errs.append([valid_err, test_err])
 
                     if (uidx == 0 or
@@ -602,7 +638,7 @@ def train_lstm(
                         best_p = unzip(tparams)
                         bad_counter = 0
 
-                    print ('Train ', train_err, 'Valid ', valid_err,
+                    print >> f, ('Train ', train_err, 'Valid ', valid_err,
                            'Test ', test_err)
 
                     if (len(history_errs) > patience and
@@ -615,6 +651,7 @@ def train_lstm(
                             break
 
             print 'Seen %d samples' % n_samples
+            print >> f, 'Seen %d samples' % n_samples
 
             if estop:
                 break
@@ -635,6 +672,7 @@ def train_lstm(
     test_err = pred_error(f_pred, prepare_data, test, kf_test)
 
     print 'Train ', train_err, 'Valid ', valid_err, 'Test ', test_err
+    print >> f, 'Train ', train_err, 'Valid ', valid_err, 'Test ', test_err
     if saveto:
         numpy.savez(saveto, train_err=train_err,
                     valid_err=valid_err, test_err=test_err,
@@ -643,12 +681,55 @@ def train_lstm(
         (eidx + 1), (end_time - start_time) / (1. * (eidx + 1)))
     print >> sys.stderr, ('Training took %.1fs' %
                           (end_time - start_time))
+
+    print >> f,  'The code run for %d epochs, with %f sec/epochs' % (
+        (eidx + 1), (end_time - start_time) / (1. * (eidx + 1)))
+    print >> f, ('Training took %.1fs' %
+                          (end_time - start_time))
+
+    f.close()
+
+    print train_errs
+    print valid_errs
+    # plot learning curve
+    plt.figure(figsize=(10,8))
+    plt.plot(train_errs, label="Train Error")
+    plt.plot(valid_errs, label="Valid Eror")
+    plt.xlabel("Epoch")
+    plt.ylabel("Error")
+    plt.legend(frameon=True, prop={'size': 18})
+    plt.savefig(exp_name+"_learning_curve.png")
     return train_err, valid_err, test_err
 
 
 if __name__ == '__main__':
-    # See function train for all possible parameter and there definition.
+
     train_lstm(
         max_epochs=100,
         test_size=500,
+        exp_name="have all gates"
     )
+
+    has_input_gate = False
+    train_lstm(
+        max_epochs=100,
+        test_size=500,
+        exp_name="without_input_gate"
+    )
+    has_input_gate = True
+
+    has_output_gate = False
+    train_lstm(
+        max_epochs=100,
+        test_size=500,
+        exp_name="without_output_gate"
+    )
+    has_output_gate = True
+
+    has_forget_gate = False
+    train_lstm(
+        max_epochs=100,
+        test_size=500,
+        exp_name="without_forget_gate"
+    )
+    has_forget_gate = True
