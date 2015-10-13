@@ -459,7 +459,8 @@ def pred_error(f_pred, prepare_data, data, iterator, verbose=False):
 
     return valid_err
 
-
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn
 
