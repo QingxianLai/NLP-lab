@@ -1,0 +1,34 @@
+#
+# Simple model configs
+#
+
+# Model Hyperparameters
+batch_size: 16
+dim_word: 100  # word vector dimensionality
+dim: 500  # the number of LSTM units
+decay_c: 0.
+encoder: lstm
+lrate: 0.01  # learning rate
+n_words: 10000
+maxlen: 50  # maximum length of the sentence
+optimizer: adam
+param_noise: 0.  # weight noise
+patience: 10
+use_dropout: False
+
+# Display Params
+dispFreq: 10
+saveFreq: 1000  # save the parameters after every saveFreq updates
+sampleFreq: 1000  # generate some samples after every sampleFreq updates
+max_epochs: 2
+validFreq: 1000  # perform validation afer every validFreq updates
+reload_: False
+
+# Dataset Params
+dataset: news
+saveto: assignment_3_model.npz  # put the path to your model here
+# fill these out
+dictionary: ../data/a3data.train.pkl # name dictionary
+train_path: ../data/preprocessed.train # /home/xukelvin/Documents/nyu_course/deep_nlp/data/dictionary.pkl
+valid_text: ../data/a3data.dev # location of development set raw text
+test_text: ../data/a3data.test # location of test set raw text
