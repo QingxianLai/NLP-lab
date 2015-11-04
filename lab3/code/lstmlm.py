@@ -652,15 +652,14 @@ def train(opts):
     print 'Computing gradient...',
     grads = tensor.grad(cost, wrt=itemlist(tparams))
 
-    f_grad = theano.function(inps, grads)
+    # f_grad = theano.function(inps, grads)
     print 'Done'
 
     # TODO: ASSIGNMENT: Implement gradient clipping here.
     ita = 1
-    print f_grad
-    grad_norm = (f_grad(*inps) ** 2).sum()
-    if grad_norm > ita:
-        grads = grads / grad_norm * ita
+    print grads
+    grad_norm = tensor.sqrt(tensor.sum([(g ** 2).sum() for g in grads]))
+    grads = [tensor.switch(tensor.ge(grad_norm, ita), g/grad_norm * ita,  g) for g in grads]
 
     lr = tensor.scalar(name='lr')
     print 'Building optimizers...',
