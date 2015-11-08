@@ -1,0 +1,10 @@
+numpy/intel/1.9.2(28):ERROR:150: Module 'numpy/intel/1.9.2' conflicts with the currently loaded module(s) 'numpy/intel/1.8.1'
+numpy/intel/1.9.2(28):ERROR:102: Tcl command execution failed: conflict ${my_name}
+
+Using gpu device 0: GeForce GTX TITAN Black
+Traceback (most recent call last):
+  File "lstmlm.py", line 829, in <module>
+    best_train, best_valid, best_test = train(options)
+  File "lstmlm.py", line 580, in train
+    with open(opts['dictionary'], 'rb') as f:
+IOError: [Errno 2] No such file or directory: '../data/a3data.train.pkl'
