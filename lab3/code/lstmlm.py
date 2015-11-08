@@ -702,6 +702,8 @@ def train(opts):
 
     uidx = 0
     estop = False
+    Valid_pplx = []
+    Test_pplx = []
     for eidx in xrange(opts['max_epochs']):
         n_samples = 0
 
@@ -787,13 +789,15 @@ def train(opts):
                             estop = True
                             break
 
+                Valid_pplx.append(train_err)
+                Test_pplx.append(test_err)
                 print 'Train ', train_err, 'Valid ', valid_err, 'Test ', test_err
 
         print 'Seen %d samples' % n_samples
 
         if estop:
             break
-
+    print "====== Valid pplx: ===========\n", Valid_pplx, "\n========== Test pplx: ==========\n", Test_pplx, "\n================================\n"
     if best_p is not None:
         zipp(best_p, tparams)
 
