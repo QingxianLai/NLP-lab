@@ -5,6 +5,8 @@
 #PBS -l mem=2G
 #PBS -N lab3.ita.1
 #PBS -j oe
+#PBS -m abe
+#PBS -M ql516@nyu.edu
 
 cd ./NLUDR/NLP-lab/lab3/code
 

@@ -20,7 +20,7 @@ use_dropout: False
 dispFreq: 10
 saveFreq: 1000  # save the parameters after every saveFreq updates
 sampleFreq: 1000  # generate some samples after every sampleFreq updates
-max_epochs: 2
+max_epochs: 50
 validFreq: 1000  # perform validation afer every validFreq updates
 reload_: False
 
