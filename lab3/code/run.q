@@ -10,7 +10,6 @@ cd ./NLUDR/NLP-lab/lab3/code
 
 module purge
 
-module load numpy/intel/1.9.2
 module load cuda/7.0.28
 module load theano/0.7.0
 module load scikit-learn/intel/0.16.1
