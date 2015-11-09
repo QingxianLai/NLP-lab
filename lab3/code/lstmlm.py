@@ -573,11 +573,12 @@ def perplexity(f_cost, lines, worddict, options, verbose=False):
     cost = cost / n_words
     return cost
 
-
+import socket
+print(socket.gethostname())
 def train(opts):
     # opts - model options
 
-    file_name = "start_at_" + time.strftime("%H_%M_%S") + ".output"
+    file_name = socket.gethostname + "_start_at_" + time.strftime("%H_%M_%S") + ".output"
     f = open(file_name, 'w+')
 
 
