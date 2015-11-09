@@ -708,14 +708,14 @@ def train(opts):
     # load validation and test
     if opts['valid_text']:
         valid_lines = []
-        with open(opts['valid_text'], 'r') as f:
-            for l in f:
+        with open(opts['valid_text'], 'r') as ff:
+            for l in ff:
                 valid_lines.append(l.lower())
         n_valid_lines = len(valid_lines)
     if opts['test_text']:
         test_lines = []
-        with open(opts['test_text'], 'r') as f:
-            for l in f:
+        with open(opts['test_text'], 'r') as ff:
+            for l in ff:
                 test_lines.append(l.lower())
         n_test_lines = len(test_lines)
 
