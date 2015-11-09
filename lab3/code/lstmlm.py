@@ -672,7 +672,7 @@ def train(opts):
     print  >> f, 'Done'
 
     # TODO: ASSIGNMENT: Implement gradient clipping here.
-    ita = 1
+    ita = 0.05
     print grads
     print  >> f, grads
     grad_norm = tensor.sqrt(tensor.sum([(g ** 2).sum() for g in grads]))

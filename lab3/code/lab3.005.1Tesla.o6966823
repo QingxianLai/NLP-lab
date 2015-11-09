@@ -1,0 +1,11 @@
+numpy/intel/1.9.2(28):ERROR:150: Module 'numpy/intel/1.9.2' conflicts with the currently loaded module(s) 'numpy/intel/1.8.1'
+numpy/intel/1.9.2(28):ERROR:102: Tcl command execution failed: conflict ${my_name}
+
+Using gpu device 0: GeForce GTX TITAN Black
+gpu-24-2.local
+Traceback (most recent call last):
+  File "lstmlm.py", line 864, in <module>
+    best_train, best_valid, best_test = train(options)
+  File "lstmlm.py", line 581, in train
+    file_name = socket.gethostname + "_start_at_" + time.strftime("%H_%M_%S") + ".output"
+TypeError: unsupported operand type(s) for +: 'builtin_function_or_method' and 'str'

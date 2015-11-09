@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #PBS -l nodes=1:ppn=1:gpus=1
-#PBS -l walltime=5:00:00
+#PBS -l walltime=12:00:00
 #PBS -l mem=2G
-#PBS -N lab3.ita.1
+#PBS -N lab3.005.1Tesla
 #PBS -j oe
 #PBS -m abe
 #PBS -M ql516@nyu.edu
