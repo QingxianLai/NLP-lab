@@ -583,7 +583,7 @@ def train(opts):
 
     if opts['dictionary']:
         with open(opts['dictionary'], 'rb') as ff:
-            worddict = pkl.load(f)
+            worddict = pkl.load(ff)
         word_idict = dict()
         for kk, vv in worddict.iteritems():
             word_idict[vv] = kk
@@ -591,7 +591,7 @@ def train(opts):
     # reload options
     if opts['reload_'] and os.path.exists(opts['saveto']):
         with open('%s.pkl' % opts['saveto'], 'rb') as ff:
-            reloaded_options = pkl.load(f)
+            reloaded_options = pkl.load(ff)
             opts.update(reloaded_options)
 
     # get dataset
