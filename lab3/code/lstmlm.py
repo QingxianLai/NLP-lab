@@ -582,7 +582,7 @@ def train(opts):
 
 
     if opts['dictionary']:
-        with open(opts['dictionary'], 'rb') as f:
+        with open(opts['dictionary'], 'rb') as ff:
             worddict = pkl.load(f)
         word_idict = dict()
         for kk, vv in worddict.iteritems():
@@ -590,7 +590,7 @@ def train(opts):
 
     # reload options
     if opts['reload_'] and os.path.exists(opts['saveto']):
-        with open('%s.pkl' % opts['saveto'], 'rb') as f:
+        with open('%s.pkl' % opts['saveto'], 'rb') as ff:
             reloaded_options = pkl.load(f)
             opts.update(reloaded_options)
 
