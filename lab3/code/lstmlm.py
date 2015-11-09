@@ -789,7 +789,7 @@ def train(opts):
                             estop = True
                             break
 
-                Valid_pplx.append(train_err)
+                Valid_pplx.append(valid_err)
                 Test_pplx.append(test_err)
                 print 'Train ', train_err, 'Valid ', valid_err, 'Test ', test_err
 
