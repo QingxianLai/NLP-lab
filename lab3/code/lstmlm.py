@@ -11,6 +11,7 @@ import cPickle as pkl
 import os
 import numpy
 import yaml
+import time
 
 from scipy import optimize, stats
 from collections import OrderedDict
@@ -576,6 +577,10 @@ def perplexity(f_cost, lines, worddict, options, verbose=False):
 def train(opts):
     # opts - model options
 
+    file_name = "start_at_" + time.strftime("%H_%M_%S") + ".output"
+    f = open(file_name, 'w+')
+
+
     if opts['dictionary']:
         with open(opts['dictionary'], 'rb') as f:
             worddict = pkl.load(f)
@@ -591,11 +596,14 @@ def train(opts):
 
     # get dataset
     print 'Loading data'
+    print >> f,'Loading data'
+
     load_data, prepare_data =get_dataset(opts['dataset'])
     train = load_data(path=opts['train_path'])
 
     # build computational graph
     print 'Building model'
+    print >> f,'Building model'
     params = init_params(opts)
     # reload parameters
     if opts['reload_'] and os.path.exists(opts['saveto']):
@@ -627,12 +635,15 @@ def train(opts):
         f_rem_noise = theano.function([], [], updates=rem_update)
 
     print 'Building sampler'
+    print >> f, 'Building sampler'
     f_next = build_sampler(tparams, opts, trng, use_noise)
 
     # before any regularizer
     print 'Building f_log_probs...',
+    print  >> f, 'Building f_log_probs...',
     f_log_probs = theano.function(inps, cost)
     print 'Done'
+    print  >> f, 'Done'
 
     decay_c = opts['decay_c']
     if decay_c > 0.:
@@ -645,28 +656,36 @@ def train(opts):
 
     # after any regularizer
     print 'Building f_cost...',
+    print  >> f, 'Building f_cost...',
     f_cost = theano.function(inps, cost)
     print 'Done'
+    print  >> f, 'Done'
 
     # get gradients
     print 'Computing gradient...',
+    print  >> f, 'Computing gradient...',
     grads = tensor.grad(cost, wrt=itemlist(tparams))
 
     # f_grad = theano.function(inps, grads)
     print 'Done'
+    print  >> f, 'Done'
 
     # TODO: ASSIGNMENT: Implement gradient clipping here.
     ita = 1
     print grads
+    print  >> f, grads
     grad_norm = tensor.sqrt(tensor.sum([(g ** 2).sum() for g in grads]))
     grads = [tensor.switch(tensor.ge(grad_norm, ita), g/grad_norm * ita,  g) for g in grads]
 
     lr = tensor.scalar(name='lr')
     print 'Building optimizers...',
+    print  >> f, 'Building optimizers...',
     f_grad_shared, f_update = eval(opts['optimizer'])(lr, tparams, grads, inps, cost)
     print 'Done'
+    print  >> f, 'Done'
 
     print 'Optimization'
+    print  >> f, 'Optimization'
 
     history_errs = []
     # reload history
@@ -699,6 +718,8 @@ def train(opts):
             for l in f:
                 test_lines.append(l.lower())
         n_test_lines = len(test_lines)
+
+    f =
 
     uidx = 0
     estop = False
@@ -736,6 +757,7 @@ def train(opts):
 
             if numpy.mod(uidx, opts['saveFreq']) == 0:
                 print 'Saving...',
+                print  >> f, 'Saving...',
 
                 if best_p is not None:
                     params = best_p
@@ -744,6 +766,7 @@ def train(opts):
                 numpy.savez(opts['saveto'], history_errs=history_errs, **params)
                 pkl.dump(opts, open('%s.pkl' % opts['saveto'], 'wb'))
                 print 'Done'
+                print  >> f, 'Done'
 
             if numpy.mod(uidx, opts['sampleFreq']) == 0:
                 for jj in xrange(5):
@@ -753,15 +776,19 @@ def train(opts):
                                                trng=trng,
                                                maxlen=30)
                     print 'Sample ', jj, ': ',
+                    print  >> f, 'Sample ', jj, ': ',
                     for vv in sample:
                         if vv in word_idict:
                             print word_idict[vv],
+                            print  >> f, word_idict[vv],
                         else:
                             print 'UNK',
+                            print  >> f, 'UNK',
                     print
 
             if numpy.mod(uidx, opts['validFreq']) == 0:
                 print "Computing Dev/Test Perplexity"
+                print  >> f, "Computing Dev/Test Perplexity"
                 use_noise.set_value(0.)
                 train_err = 0
                 valid_err = 0
@@ -786,18 +813,22 @@ def train(opts):
                         bad_counter += 1
                         if bad_counter > opts['patience']:
                             print 'Early Stop!'
+                            print  >> f, 'Early Stop!'
                             estop = True
                             break
 
                 Valid_pplx.append(valid_err)
                 Test_pplx.append(test_err)
                 print 'Train ', train_err, 'Valid ', valid_err, 'Test ', test_err
+                print  >> f, 'Train ', train_err, 'Valid ', valid_err, 'Test ', test_err
 
         print 'Seen %d samples' % n_samples
+        print  >> f, 'Seen %d samples' % n_samples
 
         if estop:
             break
     print "====== Valid pplx: ===========\n", Valid_pplx, "\n========== Test pplx: ==========\n", Test_pplx, "\n================================\n"
+    print  >> f, "====== Valid pplx: ===========\n", Valid_pplx, "\n========== Test pplx: ==========\n", Test_pplx, "\n================================\n"
     if best_p is not None:
         zipp(best_p, tparams)
 
@@ -810,6 +841,7 @@ def train(opts):
         test_err = perplexity(f_cost, test_lines, worddict, opts)
 
     print 'Train ', train_err, 'Valid ', valid_err, 'Test ', test_err
+    print  >> f, 'Train ', train_err, 'Valid ', valid_err, 'Test ', test_err
 
     params = copy.copy(best_p)
     numpy.savez(opts['saveto'],
@@ -819,7 +851,7 @@ def train(opts):
                 test_err=test_err,
                 history_errs=history_errs,
                 **params)
-
+    f.close()
     return train_err, valid_err, test_err
 
 
