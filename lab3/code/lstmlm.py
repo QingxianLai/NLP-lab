@@ -719,8 +719,6 @@ def train(opts):
                 test_lines.append(l.lower())
         n_test_lines = len(test_lines)
 
-    f =
-
     uidx = 0
     estop = False
     Valid_pplx = []
