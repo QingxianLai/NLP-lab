@@ -671,9 +671,7 @@ def train(opts):
     print  >> f, 'Done'
 
     # TODO: ASSIGNMENT: Implement gradient clipping here.
-    ita = 50
-    print grads
-    print  >> f, grads
+    ita = 1
     grad_norm = tensor.sqrt(tensor.sum([(g ** 2).sum() for g in grads]))
     grads = [tensor.switch(tensor.ge(grad_norm, ita), g/grad_norm * ita,  g) for g in grads]
 
